@@ -1,6 +1,6 @@
 {
   "name": "fs-area-picker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "地理位置选择",
   "main": "dist/index.js",
   "repository": {
