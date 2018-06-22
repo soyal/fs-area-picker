@@ -1,3 +1,3 @@
 module.exports = {
-  externals: ['react', 'react-dom']
+  externals: ['react', 'antd/lib/calendar', 'prop-types', 'axios']
 }

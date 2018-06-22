@@ -2,19 +2,22 @@
  * 地理位置选择组件
  */
 import React, { Component } from 'react'
-import { Cascader } from 'antd'
-import styles from './index.less'
+import Cascader from 'antd/lib/cascader'
+import 'antd/lib/cascader/style'
 import PropTypes from 'prop-types'
 
-import fetchArea from 'api/common/area'
+import fetchArea from './api'
 
 class AreaPicker extends Component {
   static propTypes = {
     level: PropTypes.number, // 几级选择 1(省) 2(市) 3(区)
+    apiUrl: PropTypes.string.isRequired, // 请求地址
     /**
      * (area: Array<string>, areaId: string): void 回传相应的地理位置数组
      */
     onChange: PropTypes.func,
+    className: PropTypes.string,
+    style: PropTypes.object,
     value: PropTypes.arrayOf(PropTypes.string) // 地理位置的值 e.g ['四川省', '成都市', '武侯区']
   }
 
@@ -28,6 +31,14 @@ class AreaPicker extends Component {
   }
 
   provinceFetcher = null
+
+  constructor(props) {
+    super(props)
+
+    if (!props.apiUrl) {
+      throw new Error("AreaPicker need apiUrl, but you don't pass it")
+    }
+  }
 
   async getProvinces() {
     if (this.state.options.length > 0) {
@@ -106,7 +117,8 @@ class AreaPicker extends Component {
   }
 
   async fetchAreaInfo(keyword, type, isLeaf) {
-    const data = await fetchArea(keyword, type)
+    const { apiUrl } = this.props
+    const data = await fetchArea(apiUrl, keyword, type)
     if (!data || !(data instanceof Array)) return []
 
     return data.map(item => ({
@@ -157,10 +169,16 @@ class AreaPicker extends Component {
 
   render() {
     const { options } = this.state
-    const { value } = this.props
+    const { value, className, style } = this.props
+    const _style = Object.assign(
+      {
+        display: 'flex'
+      },
+      style
+    )
 
     return (
-      <div className={styles.container} onChange={this.blockBubble}>
+      <div className={className} style={_style} onChange={this.blockBubble}>
         <Cascader
           style={{ width: '100%' }}
           options={options}
