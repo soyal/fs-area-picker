@@ -1,0 +1,12 @@
+node_modules/
+stories/
+.storybook/
+.vscode/
+.idea/
+.editorconfig
+.eslintrc.json
+.gitignore
+.prettierrc.json
+config.js
+webpack.config.js
+src/
