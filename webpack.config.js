@@ -1,6 +1,6 @@
 const path = require('path')
 const autoprefixer = require('autoprefixer')
-const config = require('./config')
+// const config = require('./config')
 
 module.exports = {
   entry: './src/index.jsx',
@@ -62,18 +62,24 @@ module.exports = {
     extensions: ['.js', '.jsx']
   },
 
-  externals: _externals()
+  externals: [
+    'react',
+    'antd/lib/cascader',
+    'antd/lib/cascader/style',
+    'prop-types',
+    'axios'
+  ]
 }
 
-function _externals() {
-  const exs = {}
-  config.externals.forEach(ex => {
-    exs[ex] = {
-      commonjs: ex,
-      commonjs2: ex,
-      amd: ex
-    }
-  })
+// function _externals() {
+//   const exs = {}
+//   config.externals.forEach(ex => {
+//     exs[ex] = {
+//       commonjs: ex,
+//       commonjs2: ex,
+//       amd: ex
+//     }
+//   })
 
-  return exs
-}
+//   return exs
+// }

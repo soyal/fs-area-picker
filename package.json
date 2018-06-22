@@ -1,8 +1,15 @@
 {
   "name": "fs-area-picker",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "地理位置选择",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soyal/fs-area-picker"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --progress",
