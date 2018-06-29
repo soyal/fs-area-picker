@@ -52,12 +52,20 @@ class AreaPicker extends Component {
 
   /**
    * 设置完value后，拉取接口数据，填充相应的option
+   * 该行为只会触发一次
    * @param {Array<string>} areaValue
    */
   async initOptions(areaValue) {
     const level = this.props.level
 
-    if (areaValue.length !== level) return
+    if (this.isLoad) {
+      return
+    }
+    this.isLoad = true
+    if (areaValue.length !== level) {
+      console.warn('area picker 传入的value length与level不一致')
+      return
+    }
     const province = areaValue[0]
 
     // 找到对应的那一行
@@ -154,17 +162,24 @@ class AreaPicker extends Component {
     const nValue = this.props.value
     const oValue = prevProps.value
 
-    if (nValue && nValue.join(',') !== oValue.join(',') && !this.isLoad) {
-      this.isLoad = true
+    if (nValue && nValue.join(',') !== oValue.join(',')) {
       this.initOptions(nValue)
     }
   }
 
   async componentDidMount() {
     const provinces = await this.getProvinces()
-    this.setState({
-      options: provinces
-    })
+    this.setState(
+      {
+        options: provinces
+      },
+      () => {
+        const { value } = this.props
+        if (value.every(item => !!item)) {
+          this.initOptions(value)
+        }
+      }
+    )
   }
 
   render() {
