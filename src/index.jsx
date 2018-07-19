@@ -52,40 +52,39 @@ class AreaPicker extends Component {
 
   /**
    * 设置完value后，拉取接口数据，填充相应的option
-   * 该行为只会触发一次
    * @param {Array<string>} areaValue
    */
   async initOptions(areaValue) {
     const level = this.props.level
 
-    if (this.isLoad) {
-      return
-    }
-    this.isLoad = true
-    if (areaValue.length !== level) {
-      console.warn('area picker 传入的value length与level不一致')
-      return
-    }
     const province = areaValue[0]
+
+    if (province === '中国') return
 
     // 找到对应的那一行
     const provinces = await this.getProvinces()
-    let targetOption = provinces.find(item => {
+    let parentOption = provinces.find(item => {
       return item.value === province
     })
 
     // 已经有数据
-    if (targetOption.children) return
+    if (parentOption && parentOption.children) return
     for (let i = 1; i < level; i++) {
       const parentValue = areaValue[i - 1]
+      if (!parentValue) break
       const value = areaValue[i]
       const type = i === 1 ? 'city' : 'district'
       const isLeaf = i === level - 1
-      const list = await this.fetchAreaInfo(parentValue, type, isLeaf)
-      targetOption.children = list
+      const list = await this.fetchAreaInfo(
+        parentValue,
+        type,
+        isLeaf,
+        parentOption
+      )
+      parentOption.children = list
       if (i === level - 1) break
 
-      targetOption = list.find(item => {
+      parentOption = list.find(item => {
         return item.value === value
       })
     }
@@ -114,7 +113,8 @@ class AreaPicker extends Component {
     const children = await this.fetchAreaInfo(
       targetOption.label,
       fetchType,
-      curLen === level - 1
+      curLen === level - 1,
+      targetOption
     )
 
     targetOption.loading = false
@@ -124,34 +124,67 @@ class AreaPicker extends Component {
     })
   }
 
-  async fetchAreaInfo(keyword, type, isLeaf) {
+  async fetchAreaInfo(keyword, type, isLeaf, parentOption) {
     const { apiUrl } = this.props
-    const data = await fetchArea(apiUrl, keyword, type)
+    let data = await fetchArea(apiUrl, keyword, type)
     if (!data || !(data instanceof Array)) return []
 
-    return data.map(item => ({
+    data = data.map(item => ({
       id: item.key,
       label: item.text,
       value: item.text,
       isLeaf: isLeaf
     }))
+
+    if (type === 'province') {
+      data.unshift({
+        id: '54b76cd30f51d43d008b4571', // 这个是中国的id，先写死
+        label: '中国',
+        value: '中国',
+        isLeaf: true
+      })
+    } else if (type === 'city') {
+      data.unshift({
+        id: parentOption.id,
+        label: '全省',
+        value: null,
+        isLeaf: true
+      })
+    } else if (type === 'district') {
+      data.unshift({
+        id: parentOption.id,
+        label: '全市',
+        value: null,
+        isLeaf: true
+      })
+    }
+
+    return data
   }
 
   onChange = async value => {
     // 所有id,name都存在state,这里是在state上找对应中文名的地理位置id
     const { options } = this.state
     let targetOption, children
+    // 这里是为了找id
     for (let name of value) {
       if (!targetOption) {
         children = options // 根节点
       }
-      targetOption = children.find(option => option.label === name)
+      targetOption = children.find(option => option.value === name)
       children = targetOption.children || []
     }
 
     const id = (targetOption && targetOption.id) || ''
+    // 去除选择了全省全市后留下的null
+    const nValues = []
+    value.forEach(e => {
+      if (e) {
+        nValues.push(e)
+      }
+    })
 
-    this.props.onChange && this.props.onChange(value, id)
+    this.props.onChange && this.props.onChange(nValues, id)
   }
 
   blockBubble = e => {
@@ -159,27 +192,20 @@ class AreaPicker extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const nValue = this.props.value
     const oValue = prevProps.value
+    const nValue = this.props.value
 
-    if (nValue && nValue.join(',') !== oValue.join(',')) {
+    if (nValue && nValue.join(',') !== oValue.join(',') && !this.isLoad) {
+      this.isLoad = true
       this.initOptions(nValue)
     }
   }
 
   async componentDidMount() {
     const provinces = await this.getProvinces()
-    this.setState(
-      {
-        options: provinces
-      },
-      () => {
-        const { value } = this.props
-        if (value.every(item => !!item)) {
-          this.initOptions(value)
-        }
-      }
-    )
+    this.setState({
+      options: provinces
+    })
   }
 
   render() {
