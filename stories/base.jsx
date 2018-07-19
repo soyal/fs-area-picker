@@ -14,11 +14,11 @@ class BaseDemo extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      this.setState({
-        area: ['贵州省', '六盘水市', '六枝特区']
-      })
-    }, 1000)
+    // setTimeout(() => {
+    //   this.setState({
+    //     area: ['贵州省', '六盘水市', '六枝特区']
+    //   })
+    // }, 1000)
   }
 
   render() {

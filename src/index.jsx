@@ -206,6 +206,11 @@ class AreaPicker extends Component {
     this.setState({
       options: provinces
     })
+
+    const { value } = this.props
+    if (value && value.length > 0 && value.every(item => !!item)) {
+      this.initOptions(value)
+    }
   }
 
   render() {
